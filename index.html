@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ChatAR — Sign in</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div class="auth-shell">
+  <div class="auth-card">
+    <div class="auth-mark">Chat<span class="brand-ar">AR</span></div>
+    <div class="auth-created-by">Created by AR</div>
+    <h1 class="auth-title" id="formTitle">Welcome back</h1>
+    <p class="auth-sub" id="formSub">Sirf username aur password se sign in karein — koi mobile number nahi chahiye.</p>
+
+    <div class="auth-error" id="errorBox"></div>
+
+    <form id="authForm">
+      <div class="field">
+        <label for="username">Username</label>
+        <input type="text" id="username" autocomplete="username" placeholder="e.g. rahul_92" required minlength="3" pattern="[a-zA-Z0-9_]+" />
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" autocomplete="current-password" placeholder="••••••••" required minlength="6" />
+      </div>
+      <button type="submit" class="btn-primary" id="submitBtn">Sign in</button>
+    </form>
+
+    <div class="auth-switch">
+      <span id="switchText">Naya account banana hai?</span>
+      <button type="button" id="switchBtn">Sign up</button>
+    </div>
+
+    <div class="auth-note">
+      Aapki chat sirf aap aur jis se baat kar rahe hain, unke beech rehti hai — koi tisra participant is chat ko nahi dekh sakta, sivaay service ke administrator ke jinke paas maintenance/moderation ke liye backend access hota hai.
+    </div>
+  </div>
+</div>
+
+<script type="module" src="js/auth.js"></script>
+</body>
+</html>
