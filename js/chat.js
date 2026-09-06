@@ -46,13 +46,13 @@ async function startNewChat() {
   const target = newChatUsername.value.trim().toLowerCase();
   if (!target) return;
   if (target === currentUsername.toLowerCase()) {
-    alert("Aap khud se chat nahi kar sakte.");
+    alert("You can't chat with yourself.");
     return;
   }
 
   const usernameDoc = await getDoc(doc(db, "usernames", target));
   if (!usernameDoc.exists()) {
-    alert("Ye username nahi mila.");
+    alert("That username wasn't found.");
     return;
   }
   const otherUid = usernameDoc.data().uid;
@@ -86,7 +86,7 @@ function listenToChats() {
 
   onSnapshot(q, (snap) => {
     if (snap.empty) {
-      contactList.innerHTML = `<div class="empty-contacts">Abhi koi chat nahi hai. Upar username daal kar shuru karein.</div>`;
+      contactList.innerHTML = `<div class="empty-contacts">No chats yet. Enter a username above to get started.</div>`;
       return;
     }
     contactList.innerHTML = "";
@@ -101,7 +101,7 @@ function listenToChats() {
       el.className = "contact" + (chatId === activeChatId ? " active" : "");
       el.innerHTML = `
         <div class="contact-name">${escapeHtml(otherUsername)}</div>
-        <div class="contact-preview">${escapeHtml(data.lastMessage || "Chat shuru karein…")}</div>
+        <div class="contact-preview">${escapeHtml(data.lastMessage || "Start the conversation…")}</div>
       `;
       el.addEventListener("click", () => openChat(chatId));
       contactList.appendChild(el);
@@ -126,7 +126,7 @@ function openChat(chatId) {
     </div>
     <div class="messages" id="messages"></div>
     <div class="composer">
-      <input type="text" id="msgInput" placeholder="Message likhein…" autocomplete="off" />
+      <input type="text" id="msgInput" placeholder="Type a message…" autocomplete="off" />
       <button id="sendBtn">Send</button>
     </div>
   `;
@@ -186,4 +186,4 @@ function escapeHtml(str) {
   const div = document.createElement("div");
   div.textContent = str ?? "";
   return div.innerHTML;
-  }
+}
