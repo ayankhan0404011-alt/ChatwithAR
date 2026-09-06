@@ -20,7 +20,7 @@ const switchText = document.getElementById("switchText");
 const formTitle = document.getElementById("formTitle");
 const formSub = document.getElementById("formSub");
 
-// Agar already logged in hai, seedha chat page pe bhej do
+// If already logged in, go straight to the chat page
 onAuthStateChanged(auth, (user) => {
   if (user) window.location.href = "chat.html";
 });
@@ -34,15 +34,15 @@ function updateFormMode() {
   errorBox.classList.remove("show");
   if (mode === "login") {
     formTitle.textContent = "Welcome back";
-    formSub.textContent = "Sirf username aur password se sign in karein — koi mobile number nahi chahiye.";
+    formSub.textContent = "Sign in with just a username and password — no phone number required.";
     submitBtn.textContent = "Sign in";
-    switchText.textContent = "Naya account banana hai?";
+    switchText.textContent = "Need a new account?";
     switchBtn.textContent = "Sign up";
   } else {
-    formTitle.textContent = "Account banayein";
-    formSub.textContent = "Ek unique username chunein. Ye baad mein badla nahi ja sakta.";
+    formTitle.textContent = "Create an account";
+    formSub.textContent = "Choose a unique username. It can't be changed later.";
     submitBtn.textContent = "Create account";
-    switchText.textContent = "Pehle se account hai?";
+    switchText.textContent = "Already have an account?";
     switchBtn.textContent = "Sign in";
   }
 }
@@ -70,7 +70,7 @@ form.addEventListener("submit", async (e) => {
       // check username availability
       const usernameDoc = await getDoc(doc(db, "usernames", username));
       if (usernameDoc.exists()) {
-        showError("Ye username pehle se liya ja chuka hai. Doosra try karein.");
+        showError("This username is already taken. Please try another.");
         submitBtn.disabled = false;
         return;
       }
@@ -96,13 +96,13 @@ form.addEventListener("submit", async (e) => {
     submitBtn.disabled = false;
     const code = err.code || "";
     if (code.includes("user-not-found") || code.includes("invalid-credential") || code.includes("wrong-password")) {
-      showError("Username ya password galat hai.");
+      showError("Incorrect username or password.");
     } else if (code.includes("email-already-in-use")) {
-      showError("Ye username pehle se liya ja chuka hai.");
+      showError("This username is already taken.");
     } else if (code.includes("weak-password")) {
-      showError("Password kam se kam 6 characters ka hona chahiye.");
+      showError("Password must be at least 6 characters.");
     } else {
-      showError("Kuch galat ho gaya: " + err.message);
+      showError("Something went wrong: " + err.message);
     }
   }
 });
