@@ -1,4 +1,4 @@
-import { auth, db } from "./firebase-config.js";
+    import { auth, db } from "./firebase-config.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 import {
   collection, query, orderBy, onSnapshot, doc, getDocs
@@ -19,7 +19,7 @@ onAuthStateChanged(auth, async (user) => {
   if (!tokenResult.claims.admin) {
     document.body.innerHTML = `<div class="auth-shell"><div class="auth-card">
       <h1 class="auth-title">Access denied</h1>
-      <p class="auth-sub">Ye account admin nahi hai.</p>
+      <p class="auth-sub">This account is not an admin.</p>
     </div></div>`;
     return;
   }
@@ -30,7 +30,7 @@ function loadAllChats() {
   const q = query(collection(db, "chats"), orderBy("updatedAt", "desc"));
   onSnapshot(q, (snap) => {
     if (snap.empty) {
-      contactList.innerHTML = `<div class="empty-contacts">Koi chats nahi hain.</div>`;
+      contactList.innerHTML = `<div class="empty-contacts">No chats yet.</div>`;
       return;
     }
     contactList.innerHTML = "";
@@ -79,4 +79,4 @@ function escapeHtml(str) {
   const div = document.createElement("div");
   div.textContent = str ?? "";
   return div.innerHTML;
-                                               }
+}
