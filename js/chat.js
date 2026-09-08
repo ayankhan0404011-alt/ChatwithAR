@@ -2,7 +2,7 @@ import { auth, db } from "./firebase-config.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 import {
   doc, getDoc, setDoc, collection, query, where, orderBy,
-  onSnapshot, addDoc, serverTimestamp, updateDoc, limit
+  onSnapshot, addDoc, serverTimestamp, updateDoc, deleteDoc, limit
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
 const whoami = document.getElementById("whoami");
@@ -17,7 +17,7 @@ let currentUser = null;
 let currentUsername = null;
 let activeChatId = null;
 let unsubMessages = null;
-const chatMetaCache = {}; // chatId -> { otherUsername, ... }
+const chatMetaCache = {};
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
@@ -37,16 +37,16 @@ function chatIdFor(uidA, uidB) {
   return [uidA, uidB].sort().join("__");
 }
 
-newChatBtn.addEventListener("click", startNewChat);
+newChatBtn.addEventListener("click", sendRequest);
 newChatUsername.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") startNewChat();
+  if (e.key === "Enter") sendRequest();
 });
 
-async function startNewChat() {
+async function sendRequest() {
   const target = newChatUsername.value.trim().toLowerCase();
   if (!target) return;
   if (target === currentUsername.toLowerCase()) {
-    alert("You can't chat with yourself.");
+    alert("You can't add yourself.");
     return;
   }
 
@@ -67,14 +67,18 @@ async function startNewChat() {
         [currentUser.uid]: currentUsername,
         [otherUid]: usernameDoc.id
       },
+      status: "pending",
+      requestedBy: currentUser.uid,
       lastMessage: "",
       updatedAt: serverTimestamp(),
       createdAt: serverTimestamp()
     });
+    alert("Request sent. Waiting for them to accept.");
+  } else {
+    alert("A chat with this person already exists.");
   }
 
   newChatUsername.value = "";
-  openChat(chatId);
 }
 
 function listenToChats() {
@@ -86,7 +90,7 @@ function listenToChats() {
 
   onSnapshot(q, (snap) => {
     if (snap.empty) {
-      contactList.innerHTML = `<div class="empty-contacts">No chats yet. Enter a username above to get started.</div>`;
+      contactList.innerHTML = `<div class="empty-contacts">No chats yet. Enter a username above to send a request.</div>`;
       return;
     }
     contactList.innerHTML = "";
@@ -99,11 +103,39 @@ function listenToChats() {
 
       const el = document.createElement("div");
       el.className = "contact" + (chatId === activeChatId ? " active" : "");
-      el.innerHTML = `
-        <div class="contact-name">${escapeHtml(otherUsername)}</div>
-        <div class="contact-preview">${escapeHtml(data.lastMessage || "Start the conversation…")}</div>
-      `;
-      el.addEventListener("click", () => openChat(chatId));
+
+      if (data.status === "pending") {
+        if (data.requestedBy === currentUser.uid) {
+          el.innerHTML = `
+            <div class="contact-name">${escapeHtml(otherUsername)}</div>
+            <div class="contact-preview">Request sent — waiting for them to accept</div>
+          `;
+        } else {
+          el.innerHTML = `
+            <div class="contact-name">${escapeHtml(otherUsername)}</div>
+            <div class="contact-preview">Wants to chat with you</div>
+            <div style="display:flex;gap:8px;margin-top:6px;">
+              <button class="accept-btn" style="padding:6px 14px;background:#00a884;color:#fff;border:none;border-radius:16px;font-size:12.5px;">Accept</button>
+              <button class="decline-btn" style="padding:6px 14px;background:#e9edef;color:#111b21;border:none;border-radius:16px;font-size:12.5px;">Decline</button>
+            </div>
+          `;
+          el.querySelector(".accept-btn").addEventListener("click", async (e) => {
+            e.stopPropagation();
+            await updateDoc(doc(db, "chats", chatId), { status: "accepted", updatedAt: serverTimestamp() });
+          });
+          el.querySelector(".decline-btn").addEventListener("click", async (e) => {
+            e.stopPropagation();
+            await deleteDoc(doc(db, "chats", chatId));
+          });
+        }
+      } else {
+        el.innerHTML = `
+          <div class="contact-name">${escapeHtml(otherUsername)}</div>
+          <div class="contact-preview">${escapeHtml(data.lastMessage || "Start the conversation…")}</div>
+        `;
+        el.addEventListener("click", () => openChat(chatId));
+      }
+
       contactList.appendChild(el);
     });
   });
